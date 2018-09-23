@@ -28,6 +28,12 @@ namespace Bookstore.Repository
             return entityEntry.Entity;
         }
 
+        public T Remove(T entity)
+        {
+            var entityEntry = _dbContext.Set<T>().Remove(entity);
+            return entityEntry.Entity;
+        }
+
         public async Task SaveAsync()
         {
             await _dbContext.SaveChangesAsync();

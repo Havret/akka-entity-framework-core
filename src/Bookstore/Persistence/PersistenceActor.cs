@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Akka.Actor;
+﻿using Akka.Actor;
 using Bookstore.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace Bookstore.Persistence
 {
@@ -58,61 +57,23 @@ namespace Bookstore.Persistence
                     }
                 }
             });
+
+            Receive<Remove<TEntity>>(remove =>
+            {
+                Remove(remove.Entity).PipeTo(Context.Parent, Self, entity => new RemoveSuccess<TEntity>(entity),
+                    exception => new RemoveFailure(exception));
+
+                async Task<TEntity> Remove(TEntity entity)
+                {
+                    using (var serviceScope = Context.System.CreateScope())
+                    {
+                        var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
+                        var updatedEntity = repository.Remove(entity);
+                        await repository.SaveAsync();
+                        return updatedEntity;
+                    }
+                }
+            });
         }
-    }
-
-    public class Create<T> where T : class
-    {
-        public T Entity { get; }
-        public Create(T entity) => Entity = entity;
-    }
-
-    public class CreateSuccess<T> where T : class
-    {
-        public T Entity { get; }
-        public CreateSuccess(T entity) => Entity = entity;
-    }
-
-    public class CreateFailure
-    {
-        public Exception Exception { get; }
-        public CreateFailure(Exception exception) => Exception = exception;
-    }
-
-    public class Recover
-    {
-        public object[] KeyValues { get; }
-
-        public Recover(params object[] keyValues) => KeyValues = keyValues;
-    }
-
-    public class RecoverySuccess<T> where T : class
-    {
-        public T Entity { get; }
-        public RecoverySuccess(T entity) => Entity = entity;
-    }
-
-    public class RecoveryFailure
-    {
-        public Exception Exception { get; }
-        public RecoveryFailure(Exception exception) => Exception = exception;
-    }
-
-    public class Update<T> where T : class
-    {
-        public T Entity { get; }
-        public Update(T entity) => Entity = entity;
-    }
-
-    public class UpdateSuccess<T> where T : class
-    {
-        public T Entity { get; }
-        public UpdateSuccess(T entity) => Entity = entity;
-    }
-
-    public class UpdateFailure
-    {
-        public Exception Exception { get; }
-        public UpdateFailure(Exception exception) => Exception = exception;
     }
 }

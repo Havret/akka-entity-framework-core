@@ -7,6 +7,7 @@ namespace Bookstore.Repository
         Task<T> FindAsync(object[] keyValues);
         T Add(T entity);
         T Update(T entity);
+        T Remove(T entity);
         Task SaveAsync();
     }
 }

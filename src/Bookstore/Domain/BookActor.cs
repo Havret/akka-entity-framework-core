@@ -37,6 +37,11 @@ namespace Bookstore.Domain
                 });
             });
 
+            Receive<DeleteBook>(command =>
+            {
+
+            });
+
             Receive<GetBookById>(query =>
             {
                 if (Entity != null)

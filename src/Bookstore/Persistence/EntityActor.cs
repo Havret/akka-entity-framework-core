@@ -13,7 +13,7 @@ namespace Bookstore.Persistence
         protected TEntity Entity { get; private set; }
         protected abstract Guid Id { get; }
         public IStash Stash { get; set; }
-        protected virtual ILoggingAdapter Log { get; }
+        protected ILoggingAdapter Log { get; }
 
         protected EntityActor()
         {
@@ -73,6 +73,14 @@ namespace Bookstore.Persistence
             ReceiveAny(message => Stash.Stash());
         }
 
+        private void Removing()
+        {
+            //Receive<RemoveSuccess<TEntity>>(success =>
+            //{
+
+            //})
+        }
+
         protected override void PreStart()
         {
             _persistenceActor.Tell(new Recover(Id), Sender);
@@ -92,6 +100,16 @@ namespace Bookstore.Persistence
             {
                 _persistenceActor.Tell(new Update<TEntity>(entity), Sender);
                 BecomeStacked(Updating);
+            }
+        }
+
+        protected void Remove(TEntity entity, Action<TEntity> handler)
+        {
+            _pendingInvocations.Enqueue(handler);
+            if (!Equals(Entity, default(TEntity)))
+            {
+                _persistenceActor.Tell(new Remove<TEntity>(entity), Sender);
+                BecomeStacked(Removing);
             }
         }
 

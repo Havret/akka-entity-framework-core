@@ -1,14 +1,14 @@
 ﻿using Akka.Actor;
+using Bookstore.Domain;
 using Bookstore.Dto;
 using Bookstore.Messages;
+using Bookstore.Repository;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bookstore.Domain;
-using Bookstore.Repository;
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Controllers
 {
@@ -56,6 +56,13 @@ namespace Bookstore.Controllers
         public IActionResult Patch(Guid id, [FromBody] JsonPatchDocument<Book> patch)
         {
             _booksManagerActor.Tell(new UpdateBook(id, patch));
+            return Accepted();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(Guid id)
+        {
+            _booksManagerActor.Tell(new DeleteBook(id));
             return Accepted();
         }
     }

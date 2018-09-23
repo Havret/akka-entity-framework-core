@@ -10,6 +10,7 @@ namespace Bookstore.Domain
         {
             Receive<CreateBook>(command => GetOrCreate(Guid.NewGuid()).Forward(command));
             Receive<UpdateBook>(command => GetOrCreate(command.Id).Forward(command));
+            Receive<DeleteBook>(command => GetOrCreate(command.Id).Forward(command));
             Receive<GetBookById>(query => GetOrCreate(query.Id).Forward(query));
         }
 
