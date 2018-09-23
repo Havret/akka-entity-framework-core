@@ -1,10 +1,9 @@
-﻿using Akka.Actor;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Akka.Actor;
 using Akka.Event;
 
-namespace Bookstore
+namespace Bookstore.Persistence
 {
     public abstract class EntityActor<TEntity> : ReceiveActor, IWithUnboundedStash
         where TEntity : class
@@ -16,9 +15,9 @@ namespace Bookstore
         public IStash Stash { get; set; }
         protected virtual ILoggingAdapter Log { get; }
 
-        protected EntityActor(IServiceScopeFactory serviceScopeFactory)
+        protected EntityActor()
         {
-            _persistenceActor = Context.ActorOf(Props.Create(() => new PersistenceActor<TEntity>(serviceScopeFactory)));
+            _persistenceActor = Context.ActorOf(Props.Create(() => new PersistenceActor<TEntity>()));
             Log = Context.GetLogger();
         }
 

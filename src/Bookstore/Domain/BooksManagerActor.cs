@@ -1,19 +1,15 @@
 ﻿using Akka.Actor;
 using Bookstore.Messages;
 using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Bookstore.Domain
 {
     public class BooksManagerActor : ReceiveActor
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-
-        public BooksManagerActor(IServiceScopeFactory serviceScopeFactory)
+        public BooksManagerActor()
         {
-            _serviceScopeFactory = serviceScopeFactory;
-
-            Receive<CreateBook>(command => GetOrCreate(Guid.Parse("22DE779F-84C3-4978-A609-359B3F08D239")).Forward(command));
+            Receive<CreateBook>(command => GetOrCreate(Guid.NewGuid()).Forward(command));
+            Receive<UpdateBook>(command => GetOrCreate(command.Id).Forward(command));
             Receive<GetBookById>(query => GetOrCreate(query.Id).Forward(query));
         }
 
@@ -21,10 +17,11 @@ namespace Bookstore.Domain
         {
             var childName = id.ToString();
             var child = Context.Child(childName);
-            if (child.IsNobody())
-                return Context.ActorOf(Props.Create(() => new BookActor(_serviceScopeFactory)), childName);
 
-            return child;
+            if (child.IsNobody())
+                return Context.ActorOf(Props.Create(() => new BookActor()), childName);
+            else
+                return child;
         }
     }
 }

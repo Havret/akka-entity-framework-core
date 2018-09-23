@@ -1,14 +1,13 @@
-﻿using System;
-using Akka.Actor;
-using Bookstore.Dto;
+﻿using Akka.Actor;
 using Bookstore.Messages;
-using Microsoft.Extensions.DependencyInjection;
+using Bookstore.Persistence;
+using System;
 
 namespace Bookstore.Domain
 {
-    public class BookActor : EntityActor<Book, BookstoreContext>
+    public class BookActor : EntityActor<Book>
     {
-        public BookActor(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
+        public BookActor()
         {
             Id = Guid.Parse(Context.Self.Path.Name);
 
@@ -29,24 +28,24 @@ namespace Bookstore.Domain
                 });
             });
 
+            Receive<UpdateBook>(command =>
+            {
+                command.Patch.ApplyTo(Entity);
+                Persist(Entity, book =>
+                {
+                    Log.Info("Book updated");
+                });
+            });
+
             Receive<GetBookById>(query =>
             {
                 if (Entity != null)
-                    Sender.Tell(GetBookDto(Entity));
+                    Sender.Tell(Mappings.Map(Entity));
                 else
                 {
                     Sender.Tell(BookNotFound.Instance);
                     Context.Stop(Self);
                 }
-
-                BookDto GetBookDto(Book book) => new BookDto
-                {
-                    Id = book.Id,
-                    Title = book.Title,
-                    Author = book.Author,
-                    Cost = book.Cost,
-                    InventoryAmount = book.InventoryAmount
-                };
             });
         }
 

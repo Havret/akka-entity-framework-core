@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Bookstore
+namespace Bookstore.Repository
 {
     class BookstoreRepository<T> : IRepository<T> where T : class
     {
@@ -22,7 +22,7 @@ namespace Bookstore
             return entityEntry.Entity;
         }
 
-        public T UpdateAsync(T entity)
+        public T Update(T entity)
         {
             var entityEntry = _dbContext.Set<T>().Update(entity);
             return entityEntry.Entity;

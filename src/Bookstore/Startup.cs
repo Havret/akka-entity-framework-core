@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Bookstore.Domain;
+using Bookstore.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -29,13 +30,18 @@ namespace Bookstore
             services.AddScoped<IRepository<Book>, BookstoreRepository<Book>>();
 
             /* Register the ActorSystem*/
-            services.AddSingleton(_ => ActorSystem.Create("bookstore", ConfigurationLoader.Load()));
+            services.AddSingleton(provider =>
+            {
+                var serviceScopeFactory = provider.GetService<IServiceScopeFactory>();
+                var actorSystem = ActorSystem.Create("bookstore", ConfigurationLoader.Load());
+                actorSystem.AddServiceScopeFactory(serviceScopeFactory);
+                return actorSystem;
+            });
 
             services.AddSingleton<BooksManagerActorProvider>(provider =>
             {
                 var actorSystem = provider.GetService<ActorSystem>();
-                var serviceScopeFactory = provider.GetService<IServiceScopeFactory>();
-                var booksManagerActor = actorSystem.ActorOf(Props.Create(() => new BooksManagerActor(serviceScopeFactory)));
+                var booksManagerActor = actorSystem.ActorOf(Props.Create(() => new BooksManagerActor()));
                 return () => booksManagerActor;
             });
         }

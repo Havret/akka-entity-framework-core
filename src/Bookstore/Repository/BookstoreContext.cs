@@ -1,7 +1,7 @@
 ﻿using Bookstore.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bookstore
+namespace Bookstore.Repository
 {
     public class BookstoreContext : DbContext
     {

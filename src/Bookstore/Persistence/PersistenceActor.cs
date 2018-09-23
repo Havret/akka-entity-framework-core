@@ -1,13 +1,14 @@
-﻿using Akka.Actor;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Akka.Actor;
+using Bookstore.Repository;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Bookstore
+namespace Bookstore.Persistence
 {
     public class PersistenceActor<TEntity> : ReceiveActor where TEntity : class
     {
-        public PersistenceActor(IServiceScopeFactory serviceScopeFactory)
+        public PersistenceActor()
         {
             Receive<Recover>(find =>
             {
@@ -16,7 +17,7 @@ namespace Bookstore
 
                 async Task<TEntity> Recover(object[] keyValues)
                 {
-                    using (var serviceScope = serviceScopeFactory.CreateScope())
+                    using (var serviceScope = Context.System.CreateScope())
                     {
                         var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
                         return await repository.FindAsync(keyValues);
@@ -31,7 +32,7 @@ namespace Bookstore
 
                 async Task<TEntity> Create(TEntity entity)
                 {
-                    using (var serviceScope = serviceScopeFactory.CreateScope())
+                    using (var serviceScope = Context.System.CreateScope())
                     {
                         var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
                         var newEntity = repository.Add(entity);
@@ -48,7 +49,7 @@ namespace Bookstore
 
                 async Task<TEntity> Update(TEntity entity)
                 {
-                    using (var serviceScope = serviceScopeFactory.CreateScope())
+                    using (var serviceScope = Context.System.CreateScope())
                     {
                         var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
                         var updatedEntity = repository.Update(entity);

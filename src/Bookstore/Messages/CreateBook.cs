@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bookstore.Messages
+﻿namespace Bookstore.Messages
 {
     public class CreateBook
     {

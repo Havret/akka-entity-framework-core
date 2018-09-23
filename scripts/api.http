@@ -1,5 +1,5 @@
 @api = https://localhost:5001
-@bookId = 29301472-d042-4dc5-bd4f-1b37a469bd18
+@bookId = 22de779f-84c3-4978-a609-359b3f08d239
 
 ### Get book
 GET {{api}}/api/books/{{bookId}}
@@ -17,3 +17,10 @@ content-type: application/json
     "cost": 500,
     "inventoryAmount": 20
 }
+
+### Create new book
+PATCH  {{api}}/api/books
+content-type: application/json
+
+1
+{ "op": "replace", "path": "/InventoryAmount", "value": 20 }
