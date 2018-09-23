@@ -1,12 +1,11 @@
 ﻿using Akka.Actor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
 namespace Bookstore
 {
-    public class PersistenceActor<TEntity, TDbContext> : ReceiveActor where TEntity : class where TDbContext : DbContext
+    public class PersistenceActor<TEntity> : ReceiveActor where TEntity : class
     {
         public PersistenceActor(IServiceScopeFactory serviceScopeFactory)
         {
@@ -19,8 +18,8 @@ namespace Bookstore
                 {
                     using (var serviceScope = serviceScopeFactory.CreateScope())
                     {
-                        var dbContext = serviceScope.ServiceProvider.GetService<TDbContext>();
-                        return await dbContext.Set<TEntity>().FindAsync(keyValues);
+                        var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
+                        return await repository.FindAsync(keyValues);
                     }
                 }
             });
@@ -34,10 +33,10 @@ namespace Bookstore
                 {
                     using (var serviceScope = serviceScopeFactory.CreateScope())
                     {
-                        var dbContext = serviceScope.ServiceProvider.GetService<TDbContext>();
-                        var entityEntry = dbContext.Set<TEntity>().Add(entity);
-                        await dbContext.SaveChangesAsync();
-                        return entityEntry.Entity;
+                        var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
+                        var newEntity = repository.Add(entity);
+                        await repository.SaveAsync();
+                        return newEntity;
                     }
                 }
             });
@@ -51,10 +50,10 @@ namespace Bookstore
                 {
                     using (var serviceScope = serviceScopeFactory.CreateScope())
                     {
-                        var dbContext = serviceScope.ServiceProvider.GetService<TDbContext>();
-                        var entityEntry = dbContext.Set<TEntity>().Update(entity);
-                        await dbContext.SaveChangesAsync();
-                        return entityEntry.Entity;
+                        var repository = serviceScope.ServiceProvider.GetService<IRepository<TEntity>>();
+                        var updatedEntity = repository.Update(entity);
+                        await repository.SaveAsync();
+                        return updatedEntity;
                     }
                 }
             });

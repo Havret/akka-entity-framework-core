@@ -26,6 +26,8 @@ namespace Bookstore
             services.AddDbContextPool<BookstoreContext>(options =>
                 options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=BookstoreEFCore;Trusted_Connection=True;"));
 
+            services.AddScoped<IRepository<Book>, BookstoreRepository<Book>>();
+
             /* Register the ActorSystem*/
             services.AddSingleton(_ => ActorSystem.Create("bookstore", ConfigurationLoader.Load()));
 

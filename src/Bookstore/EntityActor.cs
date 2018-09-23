@@ -1,5 +1,4 @@
 ﻿using Akka.Actor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -7,9 +6,8 @@ using Akka.Event;
 
 namespace Bookstore
 {
-    public abstract class EntityActor<TEntity, TDbContext> : ReceiveActor, IWithUnboundedStash
+    public abstract class EntityActor<TEntity> : ReceiveActor, IWithUnboundedStash
         where TEntity : class
-        where TDbContext : DbContext
     {
         private readonly IActorRef _persistenceActor;
         private readonly Queue<Action<TEntity>> _pendingInvocations = new Queue<Action<TEntity>>();
@@ -20,7 +18,7 @@ namespace Bookstore
 
         protected EntityActor(IServiceScopeFactory serviceScopeFactory)
         {
-            _persistenceActor = Context.ActorOf(Props.Create(() => new PersistenceActor<TEntity, TDbContext>(serviceScopeFactory)));
+            _persistenceActor = Context.ActorOf(Props.Create(() => new PersistenceActor<TEntity>(serviceScopeFactory)));
             Log = Context.GetLogger();
         }
 
