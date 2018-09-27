@@ -18,8 +18,11 @@ content-type: application/json
     "inventoryAmount": 20
 }
 
-### Create new book
+### Update book
 PATCH {{api}}/api/books/{{bookId}}
 content-type: application/json
 
 [{ "op": "replace", "path": "/InventoryAmount", "value": 26 }]
+
+### Delete book
+DELETE {{api}}/api/books/{{bookId}}

@@ -29,6 +29,12 @@ namespace Bookstore.Persistence
                 Stash.UnstashAll();
                 UnbecomeStacked();
             });
+            Receive<RecoveryFailure>(failure =>
+            {
+                Stash.UnstashAll();
+                UnbecomeStacked();
+                OnRecoveryFailure(failure.Exception);
+            });
 
             ReceiveAny(message => Stash.Stash());
         }
@@ -75,10 +81,20 @@ namespace Bookstore.Persistence
 
         private void Removing()
         {
-            //Receive<RemoveSuccess<TEntity>>(success =>
-            //{
-
-            //})
+            Receive<RemoveSuccess<TEntity>>(success =>
+            {
+                Entity = default(TEntity);
+                Stash.UnstashAll();
+                UnbecomeStacked();
+                _pendingInvocations.Dequeue()(success.Entity);
+            });
+            Receive<RemoveFailure>(failure =>
+            {
+                _persistenceActor.Tell(new Recover(Id), Sender);
+                OnRemoveFailure(failure.Exception);
+                UnbecomeStacked();
+                BecomeStacked(Recovering);
+            });
         }
 
         protected override void PreStart()
@@ -116,6 +132,16 @@ namespace Bookstore.Persistence
         protected virtual void OnPersistFailure(Exception cause)
         {
             Log.Error(cause, "Failed to persist entity type [{0}] for Id [{1}]", typeof(TEntity), Id);
+        }
+
+        protected virtual void OnRemoveFailure(Exception cause)
+        {
+            Log.Error(cause, "Failed to persist entity type [{0}] for Id [{1}]", typeof(TEntity), Id);
+        }
+
+        protected virtual void OnRecoveryFailure(Exception cause)
+        {
+            Log.Error(cause, "Failed to restore entity type [{0}] for Id [{1}]", typeof(TEntity), Id);
         }
     }
 }

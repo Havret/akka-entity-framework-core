@@ -39,7 +39,10 @@ namespace Bookstore.Domain
 
             Receive<DeleteBook>(command =>
             {
-
+                Remove(Entity, book =>
+                {
+                    Log.Info("Book removed");
+                });
             });
 
             Receive<GetBookById>(query =>
